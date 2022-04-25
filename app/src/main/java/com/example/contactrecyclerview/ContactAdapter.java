@@ -11,12 +11,15 @@ import android.widget.TextView;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.contactrecyclerview.databinding.ContactItemBinding;
+import com.example.contactrecyclerview.room.Contact;
+import com.example.contactrecyclerview.room.ContactViewModel;
 
 import java.util.ArrayList;
 
 public class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.ViewHolder> {
 
-    private ArrayList<ContactType> localDataSet;
+    private ArrayList<Contact> localDataSet;
+    private ContactViewModel contactViewModel;
 
     /**
      * Provide a reference to the type of views that you are using
@@ -41,8 +44,9 @@ public class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.ViewHold
      * @param dataSet String[] containing the data to populate views to be used
      * by RecyclerView.
      */
-    public ContactAdapter(ArrayList<ContactType> dataSet) {
+    public ContactAdapter(ArrayList<Contact> dataSet, ContactViewModel contactViewModel) {
         localDataSet = dataSet;
+        this.contactViewModel = contactViewModel;
     }
 
     // Create new views (invoked by the layout manager)
@@ -61,7 +65,7 @@ public class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.ViewHold
 
         // Get element from your dataset at this position and replace the
         // contents of the view with that element
-        ContactType data = localDataSet.get(position);
+        Contact data = localDataSet.get(position);
         ConstraintLayout container = viewHolder.contactItemBinding.container;
         TextView cardTitle = viewHolder.contactItemBinding.cardTitle;
         TextView email = viewHolder.contactItemBinding.email;
@@ -80,7 +84,7 @@ public class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.ViewHold
         deleteButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                localDataSet.remove(position);
+                contactViewModel.delete(data);
             }
         });
     }

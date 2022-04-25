@@ -1,9 +1,8 @@
 package com.example.contactrecyclerview;
 
 
-import java.io.Serializable;
 
-public class ContactType implements Serializable {
+public class ContactType {
     public String name;
     public String email;
 

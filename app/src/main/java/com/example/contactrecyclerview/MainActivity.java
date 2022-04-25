@@ -11,22 +11,26 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.room.Room;
 import com.example.contactrecyclerview.databinding.ActivityMainBinding;
+import com.example.contactrecyclerview.room.*;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
     private ActivityMainBinding binding;
-    private ArrayList<ContactType> contactDataset;
+    private ArrayList<Contact> contactDataset;
     private RecyclerView contactRecycler;
-    private ContactDataset contactDatasetClass;
     private Intent addIntent;
     private FloatingActionButton addButton, refreshButton;
     private ContactAdapter contactAdapter;
+    private ContactViewModel contactViewModel;
     ActivityResultLauncher<Intent> someActivityResultLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
             new ActivityResultCallback<ActivityResult>() {
@@ -36,7 +40,7 @@ public class MainActivity extends AppCompatActivity {
                         Intent data = result.getData();
                         String name = data.getStringExtra("name");
                         String email = data.getStringExtra("email");
-                        contactDatasetClass.addData(name,email);
+                        contactViewModel.insert(new Contact(name, email));
                     }
                 }
             });
@@ -52,6 +56,9 @@ public class MainActivity extends AppCompatActivity {
         refreshButton = binding.refresh;
         addIntent = new Intent(this, ContactAdd.class);
 
+
+        contactViewModel = new ViewModelProvider(this).get(ContactViewModel.class);
+
         initDataset();
         setUpRecyclerView();
 
@@ -66,18 +73,22 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 someActivityResultLauncher.launch(addIntent);
+                startActivity(getIntent());
             }
         });
     }
 
     private void setUpRecyclerView(){
-        contactAdapter = new ContactAdapter(contactDataset);
+        contactAdapter = new ContactAdapter(contactDataset,contactViewModel);
         contactRecycler.setAdapter(contactAdapter);
         contactRecycler.setLayoutManager(new LinearLayoutManager(this));
+        contactViewModel.getAllContact().observe(this, contacts -> {
+            contactAdapter = new ContactAdapter(new ArrayList<>(contacts),contactViewModel);
+            contactRecycler.setAdapter(contactAdapter);
+        });
     }
 
     private void initDataset(){
-        contactDatasetClass = new ContactDataset();
-        this.contactDataset = contactDatasetClass.getContactTypes();
+        this.contactDataset = new ArrayList<>();
     }
 }
